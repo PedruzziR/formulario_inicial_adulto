@@ -109,7 +109,7 @@ Estou ciente de que posso solicitar a qualquer momento o acesso, correção ou e
 # st.info cria uma caixa azul de destaque. Se preferir texto normal, troque por st.write(termo_lgpd)
 st.info(termo_lgpd)
 
-consentimento = st.radio("Marcando a opção "Sim" a seguir, você autoriza o tratamento dos seusdados pessoais nos termos mencionados acima.", ["Não", "Sim"], index=0, horizontal=True)
+consentimento = st.radio("""Marcando a opção "Sim" a seguir, você autoriza o tratamento dos seusdados pessoais nos termos mencionados acima.""", ["Não", "Sim"], index=0, horizontal=True)
 
 if consentimento == "Não":
     st.warning("⚠️ É necessário aceitar os termos para prosseguir.")
