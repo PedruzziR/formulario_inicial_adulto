@@ -7,6 +7,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 import requests
+import re  # <--- NOVA BIBLIOTECA PARA LIDAR COM A FORMATAÇÃO
 
 # ================= CONEXÃO COM GOOGLE SHEETS =================
 @st.cache_resource
@@ -18,7 +19,6 @@ def conectar_planilha():
     ]
     creds = Credentials.from_service_account_info(creds_dict, scopes=escopos)
     client = gspread.authorize(creds)
-    # Abre a planilha central e acessa a aba específica de triagem
     return client.open("Controle_Tokens").worksheet("Formulario_Inicial")
 
 try:
@@ -53,7 +53,7 @@ def enviar_email_triagem(dados):
     except:
         return False
 
-# ================= FUNÇÃO BUSCA CEP =================
+# ================= FUNÇÕES DE BUSCA E MÁSCARAS =================
 def buscar_cep(cep):
     cep_limpo = "".join(filter(str.isdigit, cep))
     if len(cep_limpo) == 8:
@@ -64,6 +64,35 @@ def buscar_cep(cep):
         except:
             return None
     return None
+
+# Função que formata os campos assim que o paciente clica fora deles
+def aplicar_mascaras():
+    # Máscara do CPF
+    if "cpf_key" in st.session_state and st.session_state.cpf_key:
+        nums_cpf = re.sub(r'\D', '', st.session_state.cpf_key)
+        if len(nums_cpf) == 11:
+            st.session_state.cpf_key = f"{nums_cpf[:3]}.{nums_cpf[3:6]}.{nums_cpf[6:9]}-{nums_cpf[9:]}"
+        else:
+            st.session_state.cpf_key = nums_cpf # Mantém só números se estiver incompleto
+
+    # Máscara do Telefone
+    if "tel_key" in st.session_state and st.session_state.tel_key:
+        nums_tel = re.sub(r'\D', '', st.session_state.tel_key)
+        if len(nums_tel) == 11:
+            st.session_state.tel_key = f"({nums_tel[:2]}) {nums_tel[2:7]}-{nums_tel[7:]}"
+        elif len(nums_tel) == 10: # Caso telefone fixo
+            st.session_state.tel_key = f"({nums_tel[:2]}) {nums_tel[2:6]}-{nums_tel[6:]}"
+        else:
+            st.session_state.tel_key = nums_tel
+
+    # Máscara da Data de Nascimento
+    if "nasc_key" in st.session_state and st.session_state.nasc_key:
+        nums_nasc = re.sub(r'\D', '', st.session_state.nasc_key)
+        if len(nums_nasc) == 8:
+            st.session_state.nasc_key = f"{nums_nasc[:2]}/{nums_nasc[2:4]}/{nums_nasc[4:]}"
+        else:
+            st.session_state.nasc_key = nums_nasc
+
 
 # ================= INTERFACE STREAMLIT =================
 st.set_page_config(page_title="Formulário Inicial", layout="centered")
@@ -102,7 +131,6 @@ st.divider()
 # --- LGPD ---
 st.markdown("<h3 style='text-align: center;'>Termo de Consentimento para Tratamento de Dados Pessoais</h3>", unsafe_allow_html=True)
 
-# Caixa customizada da LGPD (Sem fundo, borda branca, cantos arredondados)
 termo_lgpd_html = """
 <div style="border: 1px solid white; border-radius: 10px; padding: 20px; margin-top: 10px; margin-bottom: 20px; text-align: justify;">
 Em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais (LGPD), autorizo o uso dos meus dados pessoais informados neste formulário para as finalidades específicas de construção do laudo de Avaliação Neuropsicológica e em caso de certificação da atividade do conveniado junto ao seu convênio, se neste caso existir.<br><br>
@@ -131,11 +159,12 @@ nome = st.text_input("3. Nome Completo *")
 
 col1, col2 = st.columns(2)
 with col1:
-    cpf = st.text_input("4. CPF *")
+    # Adicionamos "on_change" e os limitadores aos campos
+    cpf = st.text_input("4. CPF *", key="cpf_key", on_change=aplicar_mascaras, max_chars=14, placeholder="Apenas números")
     email_paciente = st.text_input("E-mail *")
 with col2:
-    telefone = st.text_input("5. Telefone (WhatsApp) *")
-    nascimento = st.text_input("6. Data de Nascimento *", placeholder="DD/MM/AAAA")
+    telefone = st.text_input("5. Telefone (WhatsApp) *", key="tel_key", on_change=aplicar_mascaras, max_chars=15, placeholder="Apenas números")
+    nascimento = st.text_input("6. Data de Nascimento *", key="nasc_key", on_change=aplicar_mascaras, max_chars=10, placeholder="DDMMAAAA (Apenas números)")
 
 st.divider()
 
@@ -178,9 +207,17 @@ demanda = st.text_area("12. Descreva sua demanda (Qual o motivo da avaliação?)
 st.write("") # Espaço antes do botão
 
 if st.button("Enviar Formulário"):
+    # Garantimos que a validação utilize os campos que receberam as máscaras
     campos = [nome, cpf, email_paciente, telefone, nascimento, cep_input, rua, complemento, demanda, escolaridade, profissao, encaminhamento]
+    
     if any(not c.strip() for c in campos):
         st.error("Por favor, preencha todos os campos obrigatórios (*).")
+    elif len(re.sub(r'\D', '', cpf)) != 11:
+        st.error("O CPF inserido está incompleto ou inválido.")
+    elif len(re.sub(r'\D', '', telefone)) < 10:
+        st.error("O Telefone inserido está incompleto.")
+    elif len(re.sub(r'\D', '', nascimento)) != 8:
+        st.error("A Data de Nascimento inserida está incompleta.")
     else:
         dados_finais = {
             "Data de Registro": datetime.now().strftime("%d/%m/%Y %H:%M"),
@@ -200,7 +237,6 @@ if st.button("Enviar Formulário"):
         
         if enviar_email_triagem(dados_finais):
             try:
-                # Salva na planilha "Formulario_Inicial"
                 planilha_triagem.append_row(list(dados_finais.values()))
                 st.session_state.enviado = True
                 st.rerun()
