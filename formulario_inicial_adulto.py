@@ -196,7 +196,7 @@ st.subheader("Informações Complementares")
 escolaridade = st.selectbox("Escolaridade *", OPCOES_ESCOLARIDADE)
 profissao = st.text_input("Profissão *")
 encaminhamento = st.text_input("Possui encaminhamento? (Informe o solicitante) *")
-demanda = st.text_area("Descreva sua demanda (Motivo da avaliação) *", height=100)
+demanda = st.text_area("Descreva sua demanda (motivo da avaliação) *", height=100)
 
 if st.button("Enviar Formulário"):
     # Validação
