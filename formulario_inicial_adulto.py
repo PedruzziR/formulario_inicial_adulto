@@ -65,51 +65,28 @@ def buscar_cep(cep):
             return None
     return None
 
-# ================= INTERFACE STREAMLIT =================
-st.set_page_config(page_title="Formulário Inicial", layout="centered")
-
-# Estilização
-st.markdown("""
-    <style>
-    .stButton > button {
-        background-color: #0047AB !important;
-        color: white !important;
-        border: none !important;
-        padding: 0.7rem 2rem !important;
-        border-radius: 8px !important;
-        font-weight: bold !important;
-        width: 100%;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-if "enviado" not in st.session_state:
-    st.session_state.enviado = False
-
-st.markdown("<h1 style='text-align: center;'>Clínica de Psicologia e Psicanálise Bruna Ligoski</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #555;'>Formulário Inicial - Avaliação Neuropsicológica Adulto</h4>", unsafe_allow_html=True)
-
-if st.session_state.enviado:
-    st.success("Formulário enviado com sucesso! Agradecemos o preenchimento.")
-    st.stop()
-
-st.divider()
-
 # --- LGPD ---
-st.subheader("Termo de Consentimento para Tratamento de Dados Pessoais")
+# Título centralizado usando HTML
+st.markdown("<h3 style='text-align: center;'>Termo de Consentimento para Tratamento de Dados Pessoais</h3>", unsafe_allow_html=True)
 
-termo_lgpd = """
-Em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais (LGPD), autorizo o uso dos meus dados pessoais informados neste formulário para as finalidades específicas de construção do laudo de Avaliação Neuropsicológica e em caso de certificação da atividade do conveniado junto ao seu convênio, se neste caso existir.
-
-Meus dados serão armazenados e utilizados de forma segura e sigilosa, exclusivamente pela Clínica de Psicologia e Psicanálise Bruna Ligoski, respeitando a legislação vigente. 
-
+# Caixa de texto customizada com borda branca, cantos arredondados e sem fundo
+termo_lgpd_html = """
+<div style="border: 1px solid white; border-radius: 10px; padding: 20px; margin-top: 10px; margin-bottom: 20px; text-align: justify;">
+Em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais (LGPD), autorizo o uso dos meus dados pessoais informados neste formulário para as finalidades específicas de construção do laudo de Avaliação Neuropsicológica e em caso de certificação da atividade do conveniado junto ao seu convênio, se neste caso existir.<br><br>
+Meus dados serão armazenados e utilizados de forma segura e sigilosa, exclusivamente pela Clínica de Psicologia e Psicanálise Bruna Ligoski, respeitando a legislação vigente.<br><br>
 Estou ciente de que posso solicitar a qualquer momento o acesso, correção ou exclusão dos meus dados por meio do contato de e-mail psicologabrunaligoski@gmail.com.
+</div>
 """
 
-# st.info cria uma caixa azul de destaque. Se preferir texto normal, troque por st.write(termo_lgpd)
-st.write(termo_lgpd)
+# Renderiza o termo customizado
+st.markdown(termo_lgpd_html, unsafe_allow_html=True)
 
-consentimento = st.radio("""Marcando a opção "Sim" a seguir, você autoriza o tratamento dos seusdados pessoais nos termos mencionados acima.""", ["Não", "Sim"], index=0, horizontal=True)
+consentimento = st.radio(
+    """Marcando a opção "Sim" a seguir, você autoriza o tratamento dos seus dados pessoais nos termos mencionados acima.""", 
+    ["Não", "Sim"], 
+    index=0, 
+    horizontal=True
+)
 
 if consentimento == "Não":
     st.warning("⚠️ É necessário aceitar os termos para prosseguir.")
