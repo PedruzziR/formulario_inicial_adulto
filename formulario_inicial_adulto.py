@@ -87,7 +87,7 @@ if "enviado" not in st.session_state:
     st.session_state.enviado = False
 
 st.markdown("<h1 style='text-align: center;'>Clínica de Psicologia e Psicanálise Bruna Ligoski</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #555;'>Formulário Inicial - Avaliação Neuropsicológica</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #555;'>Formulário Inicial - Avaliação Neuropsicológica Adulto</h4>", unsafe_allow_html=True)
 
 if st.session_state.enviado:
     st.success("Formulário enviado com sucesso! Agradecemos o preenchimento.")
@@ -96,12 +96,23 @@ if st.session_state.enviado:
 st.divider()
 
 # --- LGPD ---
-st.subheader("Consentimento (LGPD)")
-st.caption("Em conformidade com a Lei nº 13.709/2018 (LGPD), autorizo o uso dos meus dados para fins de Avaliação Neuropsicológica.")
-consentimento = st.radio("Você autoriza o tratamento dos seus dados?", ["Não", "Sim"], index=0, horizontal=True)
+st.subheader("Termo de Consentimento para Tratamento de Dados Pessoais")
+
+termo_lgpd = """
+Em conformidade com a Lei nº 13.709/2018 – Lei Geral de Proteção de Dados Pessoais (LGPD), autorizo o uso dos meus dados pessoais informados neste formulário para as finalidades específicas de construção do laudo de Avaliação Neuropsicológica e em caso de certificação da atividade do conveniado junto ao seu convênio, se neste caso existir.
+
+Meus dados serão armazenados e utilizados de forma segura e sigilosa, exclusivamente pela Clínica de Psicologia e Psicanálise Bruna Ligoski, respeitando a legislação vigente. 
+
+Estou ciente de que posso solicitar a qualquer momento o acesso, correção ou exclusão dos meus dados por meio do contato de e-mail psicologabrunaligoski@gmail.com.
+"""
+
+# st.info cria uma caixa azul de destaque. Se preferir texto normal, troque por st.write(termo_lgpd)
+st.info(termo_lgpd)
+
+consentimento = st.radio("Marcando a opção "Sim" a seguir, você autoriza o tratamento dos seusdados pessoais nos termos mencionados acima.", ["Não", "Sim"], index=0, horizontal=True)
 
 if consentimento == "Não":
-    st.warning("É necessário aceitar os termos para prosseguir.")
+    st.warning("⚠️ É necessário aceitar os termos para prosseguir.")
     st.stop()
 
 st.divider()
